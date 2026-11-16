@@ -518,10 +518,14 @@ def generate_tuition_receipt_html(first_name: str, last_name: str, university_ke
 
 def generate_enrollment_verification_html(first_name: str, last_name: str, university_key: str, university_config: dict) -> str:
     """Generate Enrollment Verification Letter HTML"""
-    student_id = generate_university_id(university_key)
+   # student_id = generate_university_id(university_key)
+    student_id = "4000618540"
     name = f"{first_name} {last_name}"
+    major = "Computer Science (BS)"
+    
+   # name = f"{first_name} {last_name}"
     date = datetime.now().strftime('%B %d, %Y')
-    major = get_random_major()
+    #major = get_random_major()
     term, _ = get_random_term()
     
     primary_color = university_config['primary_color']
