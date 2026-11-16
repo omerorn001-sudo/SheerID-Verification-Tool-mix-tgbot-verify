@@ -129,6 +129,19 @@ UNIVERSITIES = {
         'id_length': 9,
         'portal_name': 'Bursar\'s Office',
     },
+    'miami': {
+        'name': 'Miami Dade College',
+        'short_name': 'MDC',
+        'email_domain': 'mymdc.net',
+        'primary_color': '#005DAB',  # MDC Top Header Blue (from screenshot)
+        'secondary_color': '#2980B9',  # MDC Portal Icon Accent Blue (from screenshot)
+        'system_name': 'MDConnect Student Homepage',
+        'logo_text': 'MDC',
+        'id_format': '10_start_4000',  # 10 digits starting with 4000 (e.g., 4000618793)
+        'id_prefix': '4000',
+        'id_length': 10,
+        'portal_name': 'Financial Account',
+    },
 }
 
 
@@ -214,7 +227,7 @@ def generate_university_id(university_key: str) -> str:
     """Generate a realistic student ID for the given university based on id_format"""
     config = UNIVERSITIES[university_key]
     id_format = config.get('id_format', '8_digits')
-    
+
     if id_format == '9_digits':
         # MIT, etc: 9-digit numeric ID
         return ''.join([str(random.randint(0, 9)) for _ in range(9)])
@@ -241,6 +254,10 @@ def generate_university_id(university_key: str) -> str:
         # Georgia Tech: 9 digits starting with 9
         numbers = ''.join([str(random.randint(0, 9)) for _ in range(8)])
         return f"9{numbers}"
+    elif id_format == '10_start_4000':
+        # Miami Dade College: 10 digits starting with 4000 (e.g., 4000618793)
+        numbers = ''.join([str(random.randint(0, 9)) for _ in range(6)])
+        return f"4000{numbers}"
     else:
         # Default: 8-digit numeric ID
         return ''.join([str(random.randint(0, 9)) for _ in range(8)])
@@ -250,7 +267,7 @@ def generate_university_email(first_name: str, last_name: str, university_key: s
     """Generate an email for the given university"""
     config = UNIVERSITIES[university_key]
     domain = config['email_domain']
-    
+
     # Different universities have different email formats
     if university_key in ['mit', 'cmu']:
         # MIT/CMU often use first initial + last name
@@ -259,12 +276,16 @@ def generate_university_email(first_name: str, last_name: str, university_key: s
         # Columbia uses first initial + last name + numbers
         digits = ''.join([str(random.randint(0, 9)) for _ in range(random.choice([3, 4]))])
         email_user = f"{first_name[0].lower()}{last_name.lower()}{digits}"
+    elif university_key in ['miami', 'mdc']:
+        # Miami Dade College uses firstname.lastname + 3 digits (e.g., 001) @mymdc.net
+        digits = f"{random.randint(1, 9):03d}"
+        email_user = f"{first_name.lower()}.{last_name.lower()}{digits}"
     else:
         # Most use firstname.lastname or variations
         separator = random.choice(['.', '_', ''])
         digits = ''.join([str(random.randint(0, 9)) for _ in range(random.choice([0, 2, 3]))])
         email_user = f"{first_name.lower()}{separator}{last_name.lower()}{digits}"
-    
+
     return f"{email_user}@{domain}"
 
 
@@ -273,7 +294,7 @@ def generate_district_id(district_key: str) -> str:
     config = SCHOOL_DISTRICTS[district_key]
     prefix = config['id_prefix']
     length = config['id_length']
-    
+
     numbers = ''.join([str(random.randint(0, 9)) for _ in range(length)])
     return f"{prefix}{numbers}"
 
@@ -282,10 +303,9 @@ def generate_district_email(first_name: str, last_name: str, district_key: str) 
     """Generate an email for the given school district"""
     config = SCHOOL_DISTRICTS[district_key]
     domain = config['email_domain']
-    
     separator = random.choice(['.', '_'])
     email_user = f"{first_name.lower()}{separator}{last_name.lower()}"
-    
+
     return f"{email_user}@{domain}"
 
 
@@ -329,7 +349,7 @@ def get_random_term() -> Tuple[str, str]:
     now = datetime.now()
     year = now.year
     month = now.month
-    
+
     # Determine current semester based on date
     if month >= 8:  # Fall semester (Aug-Dec)
         semester = 'Fall'
@@ -350,7 +370,7 @@ def get_random_term() -> Tuple[str, str]:
         start_day = random.randint(10, 18)
         end_day = random.randint(5, 12)
         date_range = f'Jan {start_day} - May {end_day}'
-    
+
     return (f'{semester} {sem_year}', date_range)
 
 
@@ -388,40 +408,40 @@ def get_random_courses(count: int = 5) -> List[Dict]:
         {'dept': 'PSYC', 'num': '2301', 'title': 'Introduction to Psychology', 'units': 3},
         {'dept': 'SOCI', 'num': '1301', 'title': 'Introduction to Sociology', 'units': 3},
     ]
-    
+
     selected = random.sample(course_database, min(count, len(course_database)))
-    
+
     # Real university building names
     buildings = [
         'Engineering Building', 'Science Hall', 'Liberal Arts', 'Business Building',
         'Library', 'Humanities Hall', 'Natural Sciences', 'McBryde Hall',
         'Whittemore Hall', 'Derring Hall', 'Pamplin Hall', 'Randolph Hall'
     ]
-    
+
     # Add realistic schedule details
     for course in selected:
         # Generate section number (001-020) and CRN (10000-99999)
         section = f"{random.randint(1, 20):03d}"
         crn = random.randint(10000, 99999)
-        
+
         # Build course code in format: DEPT NUM-SECTION
         course['code'] = f"{course['dept']} {course['num']}-{section}"
         course['section'] = section
         course['crn'] = crn
         course['class_number'] = crn  # Keep for backward compatibility
-        
+
         # Generate realistic class times
         # MWF classes are 50 minutes, TR classes are 75 minutes
         days_options = ['MWF', 'TR', 'MW', 'TRF']
         days = random.choice(days_options)
-        
+
         # Common class start times
         start_hours = [8, 9, 10, 11, 12, 13, 14, 15, 16, 17]
         start_minutes = [0, 30] if days in ['TR'] else [0, 10, 20]
-        
+
         hour = random.choice(start_hours)
         minute = random.choice(start_minutes)
-        
+
         # Calculate end time based on class pattern
         if days in ['MWF']:
             duration_mins = 50  # 50-minute classes
@@ -429,13 +449,13 @@ def get_random_courses(count: int = 5) -> List[Dict]:
             duration_mins = 75  # 75-minute classes
         else:
             duration_mins = random.choice([50, 75])
-        
+
         end_hour = hour + (minute + duration_mins) // 60
         end_minute = (minute + duration_mins) % 60
-        
+
         course['time'] = f"{days} {hour:02d}:{minute:02d} - {end_hour:02d}:{end_minute:02d}"
         course['room'] = f"{random.choice(buildings)} {random.randint(100, 499)}"
-    
+
     return selected
 
 
@@ -448,21 +468,21 @@ def get_random_tuition_amount() -> float:
 def get_tuition_breakdown(total: float = None) -> List[Tuple[str, float]]:
     """
     Generate realistic tuition breakdown with line items
-    
+
     Returns list of (item_name, amount) tuples
     """
     if total is None:
         total = get_random_tuition_amount()
-    
+
     items = []
-    
+
     # Main tuition (85-92% of total)
     tuition_pct = random.uniform(0.85, 0.92)
     tuition = total * tuition_pct
     items.append(("Tuition", round(tuition, 2)))
-    
+
     remaining = total - tuition
-    
+
     # Standard university fees
     fee_types = [
         ("Technology Fee", random.uniform(400, 600)),
@@ -472,20 +492,20 @@ def get_tuition_breakdown(total: float = None) -> List[Tuple[str, float]]:
         ("Campus Security Fee", random.uniform(50, 100)),
         ("Library Fee", random.uniform(50, 150)),
     ]
-    
+
     # Randomly select 4-6 fees
     selected_fees = random.sample(fee_types, random.randint(4, min(6, len(fee_types))))
-    
+
     # Calculate current fee total
     fee_total = sum(f[1] for f in selected_fees)
-    
+
     # Adjust to match remaining amount
     if fee_total > 0:
         adjustment_factor = remaining / fee_total
         for name, amount in selected_fees:
             adjusted_amount = round(amount * adjustment_factor, 2)
             items.append((name, adjusted_amount))
-    
+
     return items
 
 
