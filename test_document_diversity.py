@@ -6,8 +6,8 @@ from utils.document_templates import DocumentType
 dt.UNIVERSITIES = {'miami': dt.UNIVERSITIES['miami']}
 
 # 2. 固定学生姓名
-FIRST_NAME = "shania"
-LAST_NAME = "lowe"
+FIRST_NAME = "Shania"
+LAST_NAME = "Lowe"
 
 # 3. 选择要测试的单个文档类型（可按需改为 CLASS_SCHEDULE 或 TUITION_RECEIPT）
 DOC_TYPE = DocumentType.ENROLLMENT_VERIFICATION
